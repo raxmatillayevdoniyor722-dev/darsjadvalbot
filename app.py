@@ -3,7 +3,6 @@ import sqlite3
 from datetime import datetime
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-
 # === TOKEN va GURUHINGIZ ID'si ===
 BOT_TOKEN = "8000578476:AAG6OzBzxslSD6JwLvE4HbHmLygMh8BSBjA"
 GROUP_ID = -7750409176  # Guruhingiz ID raqami
