@@ -19,7 +19,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = int(os.getenv("5589736243", "0"))
 
 if not BOT_TOKEN:
-    raise RuntimeError("Iltimos .env faylga BOT_TOKEN qo'ying")
+    raise RuntimeError("8261183664:AAGFgTnRb6Ex8ObaA9J0t-U5kDBy0WpOzjs")
 
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher()
@@ -100,8 +100,7 @@ UZ_DAYS = {
     "chorshanba": "chorshanba",
     "payshanba": "payshanba",
     "juma": "juma",
-    "shanba": "shanba",
-    "yakshanba": "yakshanba"
+
 }
 
 def normalize_day(s: str) -> Optional[str]:
@@ -116,7 +115,7 @@ def is_admin(user_id: int) -> bool:
 # --- Keyboard yaratish ---
 def get_weekdays_keyboard() -> ReplyKeyboardMarkup:
     builder = ReplyKeyboardBuilder()
-    days = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"]
+    days = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", ]
     for day in days:
         builder.add(KeyboardButton(text=day))
     builder.adjust(2)  # 2 ta ustun
@@ -161,7 +160,7 @@ async def cmd_help(message: Message):
 
 
 # Hafta kunlari tugmalariga javob
-@dp.message(F.text.in_(["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"]))
+@dp.message(F.text.in_(["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", ]))
 async def handle_day_button(message: Message):
     day_map = {
         "Dushanba": "dushanba",
@@ -169,8 +168,7 @@ async def handle_day_button(message: Message):
         "Chorshanba": "chorshanba",
         "Payshanba": "payshanba",
         "Juma": "juma",
-        "Shanba": "shanba",
-        "Yakshanba": "yakshanba"
+       
     }
     
     day_name = day_map[message.text]
@@ -200,8 +198,7 @@ async def cmd_today(message: Message):
         "chorshanba": "Chorshanba",
         "payshanba": "Payshanba",
         "juma": "Juma",
-        "shanba": "Shanba",
-        "yakshanba": "Yakshanba"
+    
     }
     
     rows = await get_schedules_for_day(today_name)
@@ -234,11 +231,10 @@ async def cmd_week(message: Message):
         "chorshanba": "Chorshanba",
         "payshanba": "Payshanba",
         "juma": "Juma",
-        "shanba": "Shanba",
-        "yakshanba": "Yakshanba"
+
     }
     
-    order = ["dushanba","seshanba","chorshanba","payshanba","juma","shanba","yakshanba"]
+    order = ["dushanba","seshanba","chorshanba","payshanba","juma",]
     for d in order:
         if d in grouped:
             out.append(f"<b>{day_names_uz[d]}</b>")
@@ -316,7 +312,7 @@ async def fallback(message: Message):
             day = normalize_day(day_raw)
             
             if not day:
-                await message.reply("Kun notoʻgʻri. Misol uchun: dushanba, seshanba, chorshanba, payshanba, juma, shanba, yakshanba")
+                await message.reply("Kun notoʻgʻri. Misol uchun: dushanba, seshanba, chorshanba, payshanba, juma,")
                 return
                 
             try:
@@ -350,8 +346,7 @@ async def send_daily_schedule_to_all(day_name: str):
         "chorshanba": "Chorshanba",
         "payshanba": "Payshanba",
         "juma": "Juma",
-        "shanba": "Shanba",
-        "yakshanba": "Yakshanba"
+       
     }
     
     lines = [f"<b>{day_names_uz[day_name]} — dars jadvali</b>"]
@@ -387,8 +382,7 @@ async def reschedule_daily_jobs():
             "chorshanba": "wed",
             "payshanba": "thu", 
             "juma": "fri",
-            "shanba": "sat",
-            "yakshanba": "sun"
+            
         }
         dow = day_map.get(day, None)
         if not dow:
