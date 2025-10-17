@@ -1,2 +1,0 @@
-# darsjadvalbot
-telegram bot
