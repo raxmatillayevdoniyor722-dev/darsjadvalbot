@@ -1,4 +1,3 @@
-# bot_with_buttons.py
 import os
 import asyncio
 from datetime import datetime
@@ -8,18 +7,21 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
+from aiogram.client.default import DefaultBotProperties
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import aiosqlite
 
 # === BOT TOKENNI TO‘G‘RIDAN-TO‘G‘RI SHU YERDA YOZASIZ ===
 BOT_TOKEN = "8000578476:AAG6OzBzxslSD6JwLvE4HbHmLygMh8BSBjA"  # <-- bu joyga tokeningizni yozing
-ADMIN_ID = 5589736243 # ixtiyoriy, o‘zingizning Telegram ID’ingiz (admin uchun)
+ADMIN_ID = 5589736243
+# o‘zingizning Telegram ID’ingiz (ixtiyoriy)
 
 # === Agar token kiritilmagan bo‘lsa, xato chiqaradi ===
 if not BOT_TOKEN or BOT_TOKEN == "YOUR_TELEGRAM_BOT_TOKEN_HERE":
     raise RuntimeError("Iltimos, kod ichidagi BOT_TOKEN o‘rniga haqiqiy tokeningizni yozing.")
 
-bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
+# ✅ Yangi versiyaga mos — parse_mode bu yerda belgilanadi
+bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
 DBFILE = "schedule.db"
 scheduler = AsyncIOScheduler()
@@ -54,10 +56,11 @@ async def get_all_users() -> List[int]:
         rows = await cur.fetchall()
         return [r[0] for r in rows]
 
-async def set_schedule(day: str, t: str, text: str):
+async def get_schedules_for_day(day: str) -> List[Tuple[int, str, str]]:
     async with aiosqlite.connect(DBFILE) as db:
-        await db.execute("INSERT INTO schedules (day, time, text) VALUES (?, ?, ?)", (day, t, text))
-        await db.commit()
+        cur = await db.execute("SELECT id, time, text FROM schedules WHERE day=? ORDER BY time", (day,))
+        rows = await cur.fetchall()
+        return [(r[0], r[1], r[2]) for r in rows]
 
 async def list_schedules() -> List[Tuple[int, str, str, str]]:
     async with aiosqlite.connect(DBFILE) as db:
@@ -65,24 +68,7 @@ async def list_schedules() -> List[Tuple[int, str, str, str]]:
         rows = await cur.fetchall()
         return [(r[0], r[1], r[2], r[3]) for r in rows]
 
-async def get_schedules_for_day(day: str) -> List[Tuple[int, str, str]]:
-    async with aiosqlite.connect(DBFILE) as db:
-        cur = await db.execute("SELECT id, time, text FROM schedules WHERE day=? ORDER BY time", (day,))
-        rows = await cur.fetchall()
-        return [(r[0], r[1], r[2]) for r in rows]
-
 # --- Foydali funksiyalar ---
-UZ_DAYS = {
-    "dushanba": "dushanba",
-    "seshanba": "seshanba",
-    "chorshanba": "chorshanba",
-    "payshanba": "payshanba",
-    "juma": "juma",
-}
-
-def is_admin(user_id: int) -> bool:
-    return ADMIN_ID and user_id == ADMIN_ID
-
 def get_weekdays_keyboard() -> ReplyKeyboardMarkup:
     builder = ReplyKeyboardBuilder()
     days = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma"]
@@ -98,7 +84,6 @@ async def cmd_start(message: Message):
     txt = (
         "Assalomu alaykum! 👋\n\n"
         "Men kunlik dars jadvalini yuboruvchi botman.\n\n"
-        "Quyidagi tugmalar orqali istalgan kunning jadvalini ko‘rishingiz mumkin:\n\n"
         "Buyruqlar:\n"
         "/today - bugungi jadval\n"
         "/week - haftalik jadval\n"
@@ -128,7 +113,7 @@ async def handle_day_button(message: Message):
         return
 
     lines = [f"<b>{message.text} — dars jadvali</b>"]
-    for sid, t, txt in rows:
+    for _, t, txt in rows:
         lines.append(f"{t} — {txt}")
     await message.answer("\n".join(lines))
 
@@ -168,28 +153,19 @@ async def preload_schedule():
     lessons = {
         "dushanba": [
             ("08:30", "Diskret tuzilmalar — 6B-202 / Ma’ruza / SATTOROV M.E."),
-            ("08:30", "Chiziqli algebra — 6B-202 / Ma’ruza / ZIYAYEV U.M."),
-            ("11:30", "Kiberxavfsizlik asoslari — 6B-204 / Ma’ruza / UZAQOV O.SH."),
+            ("10:00", "Chiziqli algebra — 6B-202 / Ma’ruza / ZIYAYEV U.M."),
         ],
         "seshanba": [
-            ("08:30", "Diskret tuzilmalar — 6B-202 / Ma’ruza / SATTOROV M.E."),
-            ("10:00", "Elektronika va sxemalar 1 — 6B-208 / Laboratoriya / ABDURAXMONOVA M.A."),
-            ("10:00", "Elektronika va sxemalar 1 — 6B-208 / Laboratoriya / RUSTAMOVA M.B."),
-            ("11:30", "Kiberxavfsizlik asoslari — 6B-205 / Amaliy / UZAQOV O.SH."),
+            ("08:30", "Elektronika — 6B-208 / Laboratoriya / ABDURAXMONOVA M.A."),
         ],
         "chorshanba": [
             ("08:30", "Sun’iy intellekt asoslari — 6B-204 / Ma’ruza / ACHILOVA F.K."),
-            ("10:00", "Elektronika va sxemalar 1 — 6B-211 / Ma’ruza / NAZAROV B.S."),
-            ("11:30", "Elektronika va sxemalar 1 — 6B-202 / Ma’ruza / NAZAROV B.S."),
         ],
         "payshanba": [
             ("08:30", "Kiberxavfsizlik asoslari — 6B-202 / Ma’ruza / UZAQOV O.SH."),
-            ("10:00", "Ma’rifat darslari — 6B-202 / Seminar / BOBOKULOV O.T."),
-            ("11:30", "Sun’iy intellekt asoslari — 6B-204 / Ma’ruza / ACHILOVA F.K."),
         ],
         "juma": [
             ("10:00", "Sun’iy intellekt asoslari — 6B-111 / Amaliy / ACHILOVA F.K."),
-            ("11:30", "Chiziqli algebra — 6B-202 / Ma’ruza / ZIYAYEV U.M."),
         ]
     }
 
