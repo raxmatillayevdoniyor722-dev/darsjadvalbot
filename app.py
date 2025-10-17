@@ -152,20 +152,28 @@ async def cmd_week(message: Message):
 async def preload_schedule():
     lessons = {
         "dushanba": [
-            ("08:30", "Diskret tuzilmalar — 6B-202 / Ma’ruza / SATTOROV M.E."),
-            ("10:00", "Chiziqli algebra — 6B-202 / Ma’ruza / ZIYAYEV U.M."),
+            ("08:30", "Chiziqli algebra — 6B- 202 / Ma’ruza / ZIYAYEV U.M."),
+            ("10:00", "Diskret tuzilmalar — 6B-306 / Ma’ruza / SATTOROV M.E."),
+            ("11:30", " Kiberxavsizlik asoslari - 6B- 303 / Ma'ruza /  UZAQOV O.SH."),
         ],
         "seshanba": [
-            ("08:30", "Elektronika — 6B-208 / Laboratoriya / ABDURAXMONOVA M.A."),
+            ("08:30", "Diskret tuzilmalar — 6B-202 / Ma’ruza / SATTOROV M.E."),
+            ("10:00", "Elektronika va sxemalar 1 — 6B-208 / Laboratoriya / ABDURAXMONOVA M.A."),
+            ("11:30",  " Kiberxavsizlik asoslari - 6B-205 / Amaliy /  UZAQOV O.SH." ),
         ],
         "chorshanba": [
             ("08:30", "Sun’iy intellekt asoslari — 6B-204 / Ma’ruza / ACHILOVA F.K."),
+            ("10:00", "Elektronika va sxemalar 1 — 6B- 303 / Ma'ruza / NAZAROV B.S."),
+             ("10:00", "Elektronika va sxemalar 1 — 6B- 202 / Ma'ruza / NAZAROV B.S."), 
         ],
         "payshanba": [
             ("08:30", "Kiberxavfsizlik asoslari — 6B-202 / Ma’ruza / UZAQOV O.SH."),
+            ("10:00", "Murabbiylik soati  — 6B-202 / Ma'ruza / NAZAROV B.S."),
+             ("11:30", "Sun’iy intellekt asoslari — 6B-303 / Ma’ruza / ACHILOVA F.K."),
         ],
         "juma": [
             ("10:00", "Sun’iy intellekt asoslari — 6B-111 / Amaliy / ACHILOVA F.K."),
+             ("08:30", "Chiziqli algebra — 6B- 305 / Amaliy / ZIYAYEV U.M."),
         ]
     }
 
