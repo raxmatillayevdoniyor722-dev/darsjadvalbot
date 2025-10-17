@@ -6,20 +6,18 @@ from typing import Optional, List, Tuple
 
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
 import aiosqlite
-from dotenv import load_dotenv
 
-# --- .env dan yuklash ---
-load_dotenv()
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
+# === BOT TOKENNI TO‘G‘RIDAN-TO‘G‘RI SHU YERDA YOZASIZ ===
+BOT_TOKEN = "8000578476:AAG6OzBzxslSD6JwLvE4HbHmLygMh8BSBjA"  # <-- bu joyga tokeningizni yozing
+ADMIN_ID = 5589736243 # ixtiyoriy, o‘zingizning Telegram ID’ingiz (admin uchun)
 
-if not BOT_TOKEN:
-    raise RuntimeError("Iltimos .env faylga BOT_TOKEN qo'ying")
+# === Agar token kiritilmagan bo‘lsa, xato chiqaradi ===
+if not BOT_TOKEN or BOT_TOKEN == "YOUR_TELEGRAM_BOT_TOKEN_HERE":
+    raise RuntimeError("Iltimos, kod ichidagi BOT_TOKEN o‘rniga haqiqiy tokeningizni yozing.")
 
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher()
@@ -82,10 +80,6 @@ UZ_DAYS = {
     "juma": "juma",
 }
 
-def normalize_day(s: str) -> Optional[str]:
-    s2 = s.strip().lower()
-    return UZ_DAYS.get(s2)
-
 def is_admin(user_id: int) -> bool:
     return ADMIN_ID and user_id == ADMIN_ID
 
@@ -97,7 +91,7 @@ def get_weekdays_keyboard() -> ReplyKeyboardMarkup:
     builder.adjust(2)
     return builder.as_markup(resize_keyboard=True)
 
-# --- Bot komandalar ---
+# --- Komandalar ---
 @dp.message(Command("start"))
 async def cmd_start(message: Message):
     await add_user(message.chat.id, message.from_user.first_name if message.from_user else "")
