@@ -4,8 +4,9 @@ from datetime import datetime
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
-# === TOKEN shu yerda ===
+# === TOKEN va GURUHINGIZ ID'si ===
 BOT_TOKEN = "8000578476:AAG6OzBzxslSD6JwLvE4HbHmLygMh8BSBjA"
+GROUP_ID = -7750409176  # Guruhingiz ID raqami
 DBFILE = "schedule.db"
 
 # --- Jadvalni yaratish yoki yangilash ---
@@ -23,7 +24,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-# --- Dars jadvali tayyorlash ---
+# --- Jadvalni dastlab to‘ldirish ---
 def preload_schedule():
     lessons = {
         "dushanba": [
@@ -61,7 +62,7 @@ def preload_schedule():
         conn.commit()
     conn.close()
 
-# --- Ma'lumotni olish ---
+# --- Ma'lumot olish ---
 def get_day_schedule(day):
     conn = sqlite3.connect(DBFILE)
     cur = conn.cursor()
@@ -70,8 +71,27 @@ def get_day_schedule(day):
     conn.close()
     return rows
 
-# --- Komandalar ---
+# --- Guruh a’zoligini tekshirish funksiyasi ---
+async def is_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    try:
+        member = await context.bot.get_chat_member(GROUP_ID, user_id)
+        if member.status in ["member", "administrator", "creator"]:
+            return True
+        else:
+            return False
+    except Exception:
+        return False
+
+# --- /start komandasi ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await is_member(update, context):
+        await update.message.reply_text(
+            "❌ Botdan foydalanish uchun avval guruhga a’zo bo‘ling:\n"
+            "👉 https://t.me/kompyuter_Xizmatlariiiii"
+        )
+        return
+
     keyboard = [["Dushanba", "Seshanba"], ["Chorshanba", "Payshanba"], ["Juma"]]
     markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     text = (
@@ -84,7 +104,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_text(text, reply_markup=markup)
 
+# --- /today komandasi ---
 async def today(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await is_member(update, context):
+        await update.message.reply_text(
+            "❌ Botdan foydalanish uchun guruhga a’zo bo‘ling:\n👉 https://t.me/kompyuter_Xizmatlariiiii"
+        )
+        return
+
     days = ["dushanba", "seshanba", "chorshanba", "payshanba", "juma", "shanba", "yakshanba"]
     today = days[datetime.now().weekday()]
     rows = get_day_schedule(today)
@@ -96,7 +123,14 @@ async def today(update: Update, context: ContextTypes.DEFAULT_TYPE):
         txt += f"{t} — {subject}\n"
     await update.message.reply_html(txt)
 
+# --- /week komandasi ---
 async def week(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await is_member(update, context):
+        await update.message.reply_text(
+            "❌ Botdan foydalanish uchun guruhga a’zo bo‘ling:\n👉 https://t.me/kompyuter_Xizmatlariiiii"
+        )
+        return
+
     conn = sqlite3.connect(DBFILE)
     cur = conn.cursor()
     cur.execute("SELECT day, time, text FROM schedules ORDER BY id")
@@ -119,7 +153,14 @@ async def week(update: Update, context: ContextTypes.DEFAULT_TYPE):
         msg += "\n"
     await update.message.reply_html(msg)
 
+# --- Matn orqali kun tanlash ---
 async def day_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await is_member(update, context):
+        await update.message.reply_text(
+            "❌ Botdan foydalanish uchun guruhga a’zo bo‘ling:\n👉 https://t.me/kompyuter_Xizmatlariiiii"
+        )
+        return
+
     text = update.message.text.lower()
     rows = get_day_schedule(text)
     if not rows:
