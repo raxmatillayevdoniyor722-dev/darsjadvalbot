@@ -3,6 +3,7 @@ import sqlite3
 from datetime import datetime
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.request import HTTPXRequest
 
 # === TOKEN shu yerda ===
 BOT_TOKEN = "8000578476:AAG6OzBzxslSD6JwLvE4HbHmLygMh8BSBjA"
@@ -76,7 +77,8 @@ async def is_group_member(user_id: int, context: ContextTypes.DEFAULT_TYPE) -> b
     try:
         member = await context.bot.get_chat_member(GROUP_ID, user_id)
         return member.status in ['member', 'administrator', 'creator']
-    except:
+    except Exception as e:
+        print(f"Guruh a'zoligini tekshirishda xato: {e}")
         return False
 
 # --- Guruhga qo'shilish so'rovi ---
@@ -86,7 +88,7 @@ async def send_group_request(update: Update, context: ContextTypes.DEFAULT_TYPE)
     
     text = (
         "❌ Botdan foydalanish uchun avval guruhimizga a'zo bo'lishingiz kerak!\n\n"
-        "Quyidagi tugma orqali guruhga qo'shiling va keyin botdan foydalaning:\n"
+        "Quyidagi tugma orqali guruhga qo'shiling va keyin /start ni bosing:\n"
         "https://t.me/kompyuter_Xizmatlariiiii"
     )
     await update.message.reply_text(text, reply_markup=markup)
@@ -105,6 +107,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     text = (
         "Assalomu alaykum 👋\n"
+        "Guruhga a'zo bo'lganingiz uchun rahmat!\n"
         "Men kunlik dars jadvalini yuboruvchi botman.\n\n"
         "Buyruqlar:\n"
         "/today - bugungi jadval\n"
@@ -191,7 +194,10 @@ def main():
     init_db()
     preload_schedule()
 
-    app = Application.builder().token(BOT_TOKEN).build()
+    # Conflict xatosini oldini olish uchun
+    request = HTTPXRequest(connection_pool_size=8)
+    
+    app = Application.builder().token(BOT_TOKEN).request(request).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("today", today))
@@ -199,7 +205,13 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, day_button))
 
     print("✅ Bot ishga tushdi...")
-    app.run_polling()
+    
+    # Webhook o'rniga polling ishlatamiz, lekin timeout va pool_size bilan
+    app.run_polling(
+        poll_interval=1.0,
+        timeout=20,
+        drop_pending_updates=True
+    )
 
 if __name__ == "__main__":
     main()
