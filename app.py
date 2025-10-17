@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BOT_TOKEN = os.getenv("8000578476:AAG6OzBzxslSD6JwLvE4HbHmLygMh8BSBjA")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = int(os.getenv("5589736243", "0"))
 
 if not BOT_TOKEN:
